@@ -1,0 +1,87 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mastodon-web
+  namespace: mastodon
+  labels:
+    app: mastodon
+    component: web
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mastodon
+      component: web
+  template:
+    metadata:
+      labels:
+        app: mastodon
+        component: web
+    spec:
+      securityContext:
+        fsGroup: 991
+        runAsNonRoot: true
+      containers:
+      - name: mastodon-web
+        image: tootsuite/mastodon:v4.2.3
+        command: ["/bin/bash"]
+        args:
+          - -c
+          - >-
+            echo "Running migrations..." &&
+            bundle exec rails db:migrate &&
+            echo "Precompiling assets..." &&
+            bundle exec rails assets:precompile &&
+            echo "Starting Rails server..." &&
+            bundle exec rails s -p 3000
+        securityContext:
+          allowPrivilegeEscalation: false
+          runAsUser: 991
+          runAsGroup: 991
+          capabilities:
+            drop: ["ALL"]
+          seccompProfile:
+            type: RuntimeDefault
+        ports:
+        - containerPort: 3000
+          name: http
+        resources:
+          requests:
+            memory: "1024Mi"
+            cpu: "500m"
+          limits:
+            memory: "3Gi"
+            cpu: "1000m"
+        envFrom:
+        - configMapRef:
+            name: mastodon-config
+        - secretRef:
+            name: mastodon-secrets
+        volumeMounts:
+        - name: system
+          mountPath: /opt/mastodon/public/system
+        - name: media
+          mountPath: /opt/mastodon/public/media
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 3000
+          initialDelaySeconds: 90
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 6
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 3000
+          initialDelaySeconds: 60
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 6
+      volumes:
+      - name: system
+        persistentVolumeClaim:
+          claimName: mastodon-system
+      - name: media
+        persistentVolumeClaim:
+          claimName: mastodon-media

@@ -1,0 +1,54 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mastodon-config
+  namespace: mastodon
+data:
+  # Rail/Mastodon environment
+  RAILS_ENV: "production"
+  NODE_ENV: "production"
+  
+  # Database configuration
+  DB_HOST: "postgres"
+  DB_PORT: "5432"
+  DB_NAME: "mastodon"
+  
+  # Redis configuration
+  REDIS_HOST: "redis"
+  REDIS_PORT: "6379"
+  
+  # Web configuration
+  LOCAL_DOMAIN: "10.225.149.154"
+  WEB_DOMAIN: "10.225.149.154"
+  SINGLE_USER_MODE: "false"
+  ALLOWED_PRIVATE_ADDRESSES: "10.0.0.0/8,172.16.0.0/12,192.168.0.0/16"
+  TRUSTED_PROXY_IP: "10.0.0.0/8"
+  
+  # Email configuration
+  SMTP_SERVER: "smtp.gmail.com"
+  SMTP_PORT: "587"
+  SMTP_FROM_ADDRESS: "noreply@example.com"
+  SMTP_AUTH_METHOD: "plain"
+  SMTP_ENABLE_STARTTLS: "true"
+  SMTP_ENABLE_STARTTLS_AUTO: "true"
+  
+  # File storage (using local storage)
+  PAPERCLIP_ROOT_PATH: "/opt/mastodon/public-system"
+  PAPERCLIP_ROOT_URL: "/system"
+  
+  # Additional required Mastodon settings
+  RAILS_SERVE_STATIC_FILES: "true"
+  MALLOC_ARENA_MAX: "2"
+  WEB_CONCURRENCY: "2"
+  MAX_THREADS: "5"
+  SIDEKIQ_WORKERS: "5"
+  
+  # Federation settings
+  PUBLIC_DOMAIN: "10.225.149.154"
+  DB_POOL: "10"
+  
+  # Security settings
+  FORCE_SSL: "false"
+  PROXY_HTTPS: "true"
+  TRUSTED_PROXY_IP: "0.0.0.0/0"
+  RAILS_SERVE_STATIC_FILES: "false"  # Let nginx handle static files
